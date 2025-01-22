@@ -2,59 +2,55 @@ const express = require('express');
 const axios = require('axios');
 const schedule = require('node-schedule');
 
-// Configuration
-const API_KEY = 'f7232d4548a6bf5521ebc11a405e1301'; // Clé API Weatherstack
-const LATITUDE = 43.8205; // Latitude de Grisolles
-const LONGITUDE = 1.2997; // Longitude de Grisolles
-const API_URL = `http://api.weatherstack.com/current?access_key=${API_KEY}&query=${LATITUDE},${LONGITUDE}`;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-let weatherCache = null; // Cache pour les données météo
-let lastUpdated = null; // Horodatage de la dernière mise à jour
+// Cache météo
+let weatherCache = null;
+let lastUpdated = null;
 
-// Fonction pour récupérer les données météo depuis Weatherstack
-async function fetchWeatherData() {
+// Fonction pour récupérer les données météo
+async function fetchWeather() {
   try {
-    const response = await axios.get(API_URL);
-
-    if (response.status === 200 && response.data.current) {
-      weatherCache = response.data; // Mettre à jour le cache
-      lastUpdated = new Date(); // Mettre à jour l'horodatage
-      console.log(`[${new Date().toISOString()}] Météo mise à jour avec succès.`);
-    } else {
-      console.error(`[${new Date().toISOString()}] Erreur API:`, response.data.error || 'Réponse invalide.');
-    }
+    const response = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
+      params: {
+        q: 'Paris',
+        appid: 'VOTRE_API_KEY', // Remplacez par votre clé API OpenWeatherMap
+        units: 'metric',
+        lang: 'fr'
+      }
+    });
+    weatherCache = response.data;
+    lastUpdated = new Date();
+    console.log('Météo mise à jour:', weatherCache);
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erreur lors de la requête API:`, error.message);
+    console.error('Erreur lors de la récupération des données météo:', error);
   }
 }
 
-// Planification des appels API : tous les jours à 6h et 18h
-schedule.scheduleJob('0 6,18 * * *', fetchWeatherData);
+// Mettre à jour les données toutes les heures
+schedule.scheduleJob('0 * * * *', fetchWeather);
 
-// Lancer une première récupération au démarrage
-fetchWeatherData();
+// Appeler une fois au démarrage
+fetchWeather();
 
-// Initialiser un serveur Express
-const app = express();
-
-// Route pour récupérer les données météo en cache
-app.get('/weather', (req, res) => {
-  if (weatherCache) {
-    res.json({
-      success: true,
-      data: weatherCache,
-      lastUpdated: lastUpdated,
-    });
-  } else {
-    res.status(503).json({
-      success: false,
-      message: 'Les données météo ne sont pas encore disponibles.',
-    });
-  }
+// Route principale (optionnelle, pour test)
+app.get('/', (req, res) => {
+  res.send('Bienvenue sur l\'API Météo ! Utilisez /weather pour récupérer les données météo.');
 });
 
-// Démarrer le serveur
-const PORT = 3000;
+// Route pour récupérer la météo
+app.get('/weather', (req, res) => {
+  if (!weatherCache) {
+    return res.status(503).send('Les données météo ne sont pas encore disponibles. Réessayez plus tard.');
+  }
+  res.json({
+    weather: weatherCache,
+    lastUpdated
+  });
+});
+
+// Lancer le serveur
 app.listen(PORT, () => {
-  console.log(`Serveur météo lancé sur le port ${PORT}`);
+  console.log(`Serveur météo démarré sur le port ${PORT}`);
 });
