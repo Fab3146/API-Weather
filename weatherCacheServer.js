@@ -5,47 +5,52 @@ const schedule = require('node-schedule');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Cache météo
 let weatherCache = null;
+let lastUpdated = null;
 
 // Fonction pour récupérer les données météo
 async function fetchWeather() {
   try {
-    console.log("Fetching weather data...");
-    const response = await axios.get('https://api.worldweatheronline.com/premium/v1/weather.ashx', {
+    const response = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
       params: {
-        key: 'YOUR_API_KEY',
-        q: '43.82,1.30',
-        format: 'json',
-      },
+        q: 'Paris',
+        appid: 'VOTRE_API_KEY', // Remplacez par votre clé API OpenWeatherMap
+        units: 'metric',
+        lang: 'fr'
+      }
     });
     weatherCache = response.data;
-    console.log("Weather data updated successfully!");
+    lastUpdated = new Date();
+    console.log('Météo mise à jour:', weatherCache);
   } catch (error) {
-    console.error("Error fetching weather data:", error.message);
+    console.error('Erreur lors de la récupération des données météo:', error);
   }
 }
 
-// Planifier deux mises à jour par jour (6h00 et 18h00)
+// Planifier les mises à jour à 6h00 et 18h00
 schedule.scheduleJob('0 6,18 * * *', fetchWeather);
 
-// Appeler immédiatement au démarrage (optionnel)
+// Appeler une fois au démarrage
 fetchWeather();
 
-// Endpoint pour fournir les données météo
-app.get('/weather', (req, res) => {
-  if (weatherCache) {
-    res.json({
-      success: true,
-      data: weatherCache,
-    });
-  } else {
-    res.json({
-      success: false,
-      message: "Les données météo ne sont pas encore disponibles. Réessayez plus tard.",
-    });
-  }
+// Route principale (optionnelle, pour test)
+app.get('/', (req, res) => {
+  res.send('Bienvenue sur l\'API Météo ! Utilisez /weather pour récupérer les données météo.');
 });
 
+// Route pour récupérer la météo
+app.get('/weather', (req, res) => {
+  if (!weatherCache) {
+    return res.status(503).send('Les données météo ne sont pas encore disponibles. Réessayez plus tard.');
+  }
+  res.json({
+    weather: weatherCache,
+    lastUpdated
+  });
+});
+
+// Lancer le serveur
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Serveur météo démarré sur le port ${PORT}`);
 });
