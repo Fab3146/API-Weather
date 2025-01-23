@@ -14,12 +14,15 @@ async function fetchWeather() {
   try {
     const response = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
       params: {
-        q: 'Paris',
-        appid: 'VOTRE_API_KEY', // Remplacez par votre clé API OpenWeatherMap
-        units: 'metric',
-        lang: 'fr'
+        lat: 43.8208, // Latitude de Grisolles
+        lon: 1.2981,  // Longitude de Grisolles
+        appid: 'f7232d4548a6bf5521ebc11a405e1301', // Votre clé API
+        units: 'metric', // Unités métriques pour les températures en °C
+        lang: 'fr'      // Langue française pour les descriptions
       }
     });
+
+    // Mise en cache des données météo
     weatherCache = response.data;
     lastUpdated = new Date();
     console.log('Météo mise à jour:', weatherCache);
