@@ -27,7 +27,7 @@ async function fetchWeather() {
     lastUpdated = new Date();
     console.log('Météo mise à jour:', weatherCache);
   } catch (error) {
-    console.error('Erreur lors de la récupération des données météo:', error);
+    console.error('Erreur lors de la récupération des données météo:', error.response?.data || error.message);
   }
 }
 
