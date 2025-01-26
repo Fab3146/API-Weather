@@ -16,7 +16,7 @@ async function fetchWeather() {
       params: {
         lat: 43.8208, // Latitude de Grisolles
         lon: 1.2981,  // Longitude de Grisolles
-        appid: 'f7232d4548a6bf5521ebc11a405e1301', // Votre clé API
+        appid: '21b1f141009d04a9c0b86b5060c6f031', // Votre clé API
         units: 'metric', // Unités métriques pour les températures en °C
         lang: 'fr'      // Langue française pour les descriptions
       }
