@@ -9,7 +9,9 @@
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "node-schedule": "^2.1.1"
+    "lottie-web": "^5.12.2",
+    "node-schedule": "^2.1.1",
+    "react-lottie-player": "^2.1.0"
   },
   "keywords": [],
   "author": "",
