@@ -1,9 +1,13 @@
 const express = require('express');
 const axios = require('axios');
 const schedule = require('node-schedule');
+const cors = require('cors'); // Import du middleware CORS
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Activer CORS
+app.use(cors());
 
 // Cache météo
 let weatherCache = null;
@@ -27,7 +31,7 @@ async function fetchWeather() {
     lastUpdated = new Date();
     console.log('Météo mise à jour:', weatherCache);
   } catch (error) {
-    console.error('Erreur lors de la récupération des données météo:', error.response?.data || error.message);
+    console.error('Erreur lors de la récupération des données météo:', error);
   }
 }
 
